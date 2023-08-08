@@ -1,0 +1,116 @@
+from board import *
+
+class Pawn:
+    def __init__(self, color, coords):
+        self.color = color
+        self.coords = coords
+        self.firstMove = 1
+
+    def moves(allyObject, b, turn, rowChoice, colChoice, possibleMoves):
+        if turn == "white":
+                offset = -1
+        else:
+            offset = 1
+
+        # Scans three columns ahead of pawn in correct direction
+        for col in range(colChoice-1, colChoice+2):
+            # If possible diagonal move has an enemy piece
+            if col != colChoice and b.isEnemy(turn, rowChoice + offset, col):
+                possibleMoves.append([rowChoice + offset, col])
+            # If the possible move directly ahead is empty (i.e., a string)
+            elif col == colChoice and b.isString(rowChoice + offset, col):
+                possibleMoves.append([rowChoice + offset, col])
+            
+        # Scanning for possible first-move extra movement
+        if allyObject.firstMove and b.isString(rowChoice + offset*2, colChoice):
+                possibleMoves.append([rowChoice + offset*2, colChoice])
+
+    def __repr__(self):
+        return self.color[0] + "_P"
+
+class Rook:
+    def __init__(self, color, coords):
+        self.color = color
+        self.coords = coords
+
+    def moves(allyObject, b, turn, rowChoice, colChoice, possibleMoves):
+        for index in [0, 1]: # First modifies row, then col
+            for sign in [1, -1]: # First moves down/right, then up/left
+                tempCoords = [rowChoice, colChoice]
+                tempCoords[index] += (1*sign) # Increments
+                
+                # Checks for enemy or empty tile
+                while b.isString(tempCoords[0], tempCoords[1]) or b.isEnemy(turn, tempCoords[0], tempCoords[1]):
+                    possibleMoves.append([tempCoords[0], tempCoords[1]])
+                    if b.isEnemy(turn, tempCoords[0], tempCoords[1]):
+                        break # First enemy encountered breaks loop
+                    tempCoords[index] += (1*sign)
+    
+    def __repr__(self):
+        return self.color[0] + "_R"
+    
+class Chevalier:
+    def __init__(self, color, coords):
+        self.color = color
+        self.coords = coords
+
+    def moves(allyObject, b, turn, rowChoice, colChoice, possibleMoves):
+        movements = [[1, 2], [2, 1]]
+        for movement in movements:
+            for sign1 in [1, -1]:
+                for sign2 in [1, -1]:
+                    jumpRow = rowChoice + movement[0]*sign1
+                    jumpCol = colChoice + movement[1]*sign2
+                    if b.isString(jumpRow, jumpCol) or b.isEnemy(turn, jumpRow, jumpCol):
+                        possibleMoves.append([jumpRow, jumpCol])
+
+    def __repr__(self):
+        return self.color[0] + "_C"
+    
+class Bishop:
+    def __init__(self, color, coords):
+        self.color = color
+        self.coords = coords
+    
+    def moves(allyObject, b, turn, rowChoice, colChoice, possibleMoves):
+        increments = [[1, 1], [1, -1], [-1, 1], [-1, -1]]
+        for increment in increments:
+            diagonalRow = rowChoice + increment[0]
+            diagonalCol = colChoice + increment[1]
+            while b.isString(diagonalRow, diagonalCol) or b.isEnemy(turn, diagonalRow, diagonalCol):
+                possibleMoves.append([diagonalRow, diagonalCol])
+                if b.isEnemy(turn, diagonalRow, diagonalCol):
+                    break
+                diagonalRow += increment[0]
+                diagonalCol += increment[1]
+
+    def __repr__(self):
+        return self.color[0] + "_B"
+    
+class Queen:
+    def __init__(self, color, coords):
+        self.color = color
+        self.coords = coords
+    
+    def __repr__(self):
+        return self.color[0] + "_Q"
+
+class King:
+    def __init__(self, color, coords):
+        self.color = color
+        self.coords = coords
+        self.alive = True
+
+    def moves(allyObject, b, turn, rowChoice, colChoice, possibleMoves):
+        adjacentMods = [[1, 1], [1, 0], [1, -1], # Tiles ahead
+                        [0, 1], [0, -1], # Tiles to sides
+                        [-1, 1], [-1, 0], [-1, -1]] # Tiles behind
+                    
+        for mod in adjacentMods:
+            kingRow = rowChoice + mod[0]
+            kingCol = colChoice + mod[1]
+            if b.isString(kingRow, kingCol) or b.isEnemy(turn, kingRow, kingCol):
+                possibleMoves.append([kingRow, kingCol])
+
+    def __repr__(self):
+        return self.color[0] + "_K"
