@@ -59,7 +59,6 @@ def interfaceLoop():
                     Chevalier.moves(allyObject, b, turn, rowChoice, colChoice, possibleMoves)
 
                 elif type(allyObject) == Pawn:
-                # Note that you must add ability to upgrade pawns
                     print(type(allyObject), " identified.\n")
                     
                     # We add valid pawn moves to possibleMoves
@@ -73,7 +72,7 @@ def interfaceLoop():
 
                 # If there are possible moves for given piece proceeds; elsewise, restarts loop
                 if not possibleMoves:
-                    print("Please choose a different piece.\n")
+                    print("Piece has no valid moves. Choose a different piece.\n")
                     continue
                 
                 # Calls board method to create graph of possiblities and then prints it

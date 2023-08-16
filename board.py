@@ -68,11 +68,15 @@ class Board:
             for col in range(8):
                 copyBoard.state[row][col] = str(self.state[row][col])
         
-        # Marks possibilities with "_?_"
+        # Marks possibilities with "_?_" or "_!_"
+        # "!" indicates option for removal of enemy piece
         for move in moves:
             # moves[0] == row & move[1] == col
             currentRep = copyBoard.state[move[0]][move[1]]
-            copyBoard.state[move[0]][move[1]] = currentRep[0] + "?" + currentRep[2]
+            if currentRep == "___":
+                copyBoard.state[move[0]][move[1]] = "_?_"
+            else:
+                copyBoard.state[move[0]][move[1]] = currentRep[0] + "!" + currentRep[2]
         
         return copyBoard
 
@@ -113,6 +117,19 @@ class Board:
             # If a pawn can diagonally move to an empty tile, we know it is en passant
             if targetPiece == "___":
                 self.state[origin[0]][target[1]] = "___" # We remove the enemy pawn
+        
+            # If a pawn crosses into the final row, promotion is required
+            if (target[0] == 0) or (target[0] == 7):
+                print("Choose a promotion from the following options.")
+                ranks = ["Queen","Rook","Bishop","Chevalier"]
+                for i, rank in enumerate(ranks):
+                    print(str(i) + ". " + rank)
+                print()
+                rankChoice = -1
+                while rankChoice not in [0,1,2,3]:
+                    rankChoice = int(input("Enter an associated number to proceed: "))
+                originPiece = eval(ranks[rankChoice])(originPiece.color, [origin[0]][origin[1]])
+                print("\nYour Pawn has been promoted to a" + ranks[rankChoice])
         
         # Replacing target's destination with piece object
         self.state[target[0]][target[1]] = originPiece
