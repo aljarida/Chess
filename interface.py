@@ -15,6 +15,7 @@ def interfaceLoop():
         
         # While neither king is captured, primary gameplay loop continues
         while whiteKing.alive and blackKing.alive:
+            b.turnCount += 1
             if turn == "white":
                 print("White's turn.\n")
             else:
@@ -43,11 +44,13 @@ def interfaceLoop():
                 # Note that you must add castling-capability
                     print(type(allyObject), " identified.\n")
 
+                    # We add valid rook moves to possibleMoves
                     Rook.moves(allyObject, b, turn, rowChoice, colChoice, possibleMoves)
                 
                 if type(allyObject) == Bishop or type(allyObject) == Queen:
                     print(type(allyObject), " identified.\n")
 
+                    # We add valid bishop moves to possibleMoves
                     Bishop.moves(allyObject, b, turn, rowChoice, colChoice, possibleMoves)
                 
                 elif type(allyObject) == Chevalier:
@@ -56,14 +59,16 @@ def interfaceLoop():
                     Chevalier.moves(allyObject, b, turn, rowChoice, colChoice, possibleMoves)
 
                 elif type(allyObject) == Pawn:
-                # Note that you must add en passant capability and ability to upgrade pawns
+                # Note that you must add ability to upgrade pawns
                     print(type(allyObject), " identified.\n")
                     
+                    # We add valid pawn moves to possibleMoves
                     Pawn.moves(allyObject, b, turn, rowChoice, colChoice, possibleMoves)
 
                 elif type(allyObject) == King:
                     print(type(allyObject), " identified.\n")
 
+                    # We add valid king moves to possibleMoves
                     King.moves(allyObject, b, turn, rowChoice, colChoice, possibleMoves)
 
                 # If there are possible moves for given piece proceeds; elsewise, restarts loop
@@ -82,7 +87,7 @@ def interfaceLoop():
                     print("Please choose a different piece.\n")
                     continue
             
-            # If player chooses invalid tile restarts choice loop
+            # If player chooses invalid tile, choice loop restarts
             else:
                 print("Invalid choice. Please choose again.\n")
                 continue
@@ -95,8 +100,8 @@ def interfaceLoop():
         
         # Win statements
         if not whiteKing.alive:
-            print("Black wins.")
+            print("Black wins on turn " + str(b.turnCount) + ".")
         if not blackKing.alive:
-            print("White wins.")
+            print("White wins on turn " + str(b.turnCount) + ".")
 
 interfaceLoop()

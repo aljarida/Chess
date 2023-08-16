@@ -4,6 +4,8 @@ class Board:
     def __init__(self):
         # Initializing empty 8x8 board composed of __'s
         self.state = [["___"]*8 for _ in range(8)]
+        # Initializing turn counter
+        self.turnCount = 0
     
     # Creating string representation of grid with row and column numerical labels
     def __repr__(self):
@@ -73,8 +75,6 @@ class Board:
             copyBoard.state[move[0]][move[1]] = currentRep[0] + "?" + currentRep[2]
         
         return copyBoard
-    
-    
 
     # Asks player if they would like to proceed
     # If yes, player chooses a tile to move to
@@ -97,10 +97,22 @@ class Board:
     def movePiece(self, origin, target):
         originPiece = self.state[origin[0]][origin[1]] # Acquiring object data at origin (row, col)
         targetPiece = self.state[target[0]][target[1]] # Acquiring data at target (row, col)
+        
+        # The target King is removed, thus we set it as not alive
         if type(targetPiece) == King:
             targetPiece.alive = 0
+        
+        # The origin Pawn moves, thus we mark that it has already made its first move
         if type(originPiece) == Pawn:
             originPiece.firstMove = 0
+
+            # We check for a two-tile advance to establish en passant vulnerability and mark the turn it was made
+            if abs(target[0] - origin[0]) == 2:
+                originPiece.enPassantVulnerable = self.turnCount
+            
+            # If a pawn can diagonally move to an empty tile, we know it is en passant
+            if targetPiece == "___":
+                self.state[origin[0]][target[1]] = "___" # We remove the enemy pawn
         
         # Replacing target's destination with piece object
         self.state[target[0]][target[1]] = originPiece

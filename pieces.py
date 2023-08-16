@@ -5,25 +5,35 @@ class Pawn:
         self.color = color
         self.coords = coords
         self.firstMove = 1
+        self.enPassantVulnerable = 0
 
     def moves(allyObject, b, turn, rowChoice, colChoice, possibleMoves):
+        # Direction pawn is moving
         if turn == "white":
-                offset = -1
+                heading = -1 # Up if white
         else:
-            offset = 1
+            heading = 1 # Down if black
 
         # Scans three columns ahead of pawn in correct direction
         for col in range(colChoice-1, colChoice+2):
-            # If possible diagonal move has an enemy piece
-            if col != colChoice and b.isEnemy(turn, rowChoice + offset, col):
-                possibleMoves.append([rowChoice + offset, col])
-            # If the possible move directly ahead is empty (i.e., a string)
-            elif col == colChoice and b.isString(rowChoice + offset, col):
-                possibleMoves.append([rowChoice + offset, col])
+            if col == colChoice:
+                # If the move directly ahead is empty (i.e., a string)
+                if b.isString(rowChoice + heading, col):
+                    possibleMoves.append([rowChoice + heading, col])
+            # For diagonal possibilities
+            else:
+                # If the diagonal tile is an enemy
+                if b.isEnemy(turn, rowChoice + heading, col):
+                    possibleMoves.append([rowChoice + heading, col])
+                # If the diagonal is empty but an enemy lies behind it
+                elif b.isEnemy(turn, rowChoice, col):
+                    tileBehind = b.state[rowChoice][col]
+                    if (type(tileBehind) == Pawn) and (tileBehind.enPassantVulnerable == b.turnCount-1):
+                        possibleMoves.append([rowChoice + heading, col])
             
         # Scanning for possible first-move extra movement
-        if allyObject.firstMove and b.isString(rowChoice + offset*2, colChoice):
-                possibleMoves.append([rowChoice + offset*2, colChoice])
+        if allyObject.firstMove and b.isString(rowChoice + heading*2, colChoice):
+                possibleMoves.append([rowChoice + heading*2, colChoice])
 
     def __repr__(self):
         return self.color[0] + "_P"
