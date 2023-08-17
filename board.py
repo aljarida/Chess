@@ -6,11 +6,11 @@ class Board:
         # Initializing empty 8x8 board composed of __'s
         self.state = [["___"]*8 for _ in range(8)]
         # Initializing turn counter
-        self.turnCount = 0
+        self.turnCount = 1
     
     # Creating string representation of grid with row and column numerical labels
     def __repr__(self):
-        repr = ""
+        repr = "\n"
         rowNum = 8
         for row in self.state:
             repr += str(rowNum) + " |"
@@ -22,13 +22,13 @@ class Board:
         return repr
     
     # Method for printing text and inputs in a visually interesting manner
-    def fancyPrint(self, str, latency=0.01, inp=False):
+    def fancyPrint(self, str, latency=0.01, inp=False, end=None):
         for c in str:
-            print(c,end="",flush=True)
+            print(c, end="", flush=True)
             time.sleep(latency)
         if inp:
             return input()
-        else:
+        elif end != "":
             print()
 
     # Creates board to standard chess specifications
@@ -97,7 +97,10 @@ class Board:
             letterToNum = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7,
                            'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7}
             validNums = ("1", "2", "3", "4", "5", "6", "7", "8")
-            moveInput = self.fancyPrint("Enter a valid letter-number combination (or '0' to view graveyards): ", inp=True).replace(" ", "")
+            if graves:
+                moveInput = self.fancyPrint("Enter a valid letter-number combination (or '0' to view graveyards): ", inp=True).replace(" ", "")
+            else:
+                moveInput = self.fancyPrint("Enter a valid letter-number combination: ", inp=True).replace(" ", "")
             if len(moveInput) == 2:
                 for char in moveInput:
                     if char in letterToNum:
@@ -106,14 +109,14 @@ class Board:
                         rowChoice = 8 - int(char)
             if self.inBounds(rowChoice, colChoice):
                 return [rowChoice, colChoice]
-            elif graves:
+            elif graves and moveInput == '0':
                 print(graves[0], graves[1])
             self.fancyPrint("Please choose a valid tile.")
 
     # Asks player if they would like to proceed
     # If yes, player chooses a tile to move to
     def commitMove(self, possibleMoves, rowChoice, colChoice, enemyGrave):
-        if input("Move this piece? Answer 'y'/'n'.\n") == 'y':
+        if input("Move this piece? Answer 'y'/'n': ") == 'y':
             while True:
                 moveCoords = self.getMove()
                 if moveCoords in possibleMoves:

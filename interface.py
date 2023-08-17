@@ -3,33 +3,33 @@ from pieces import *
 from graveyard import *
 
 def interfaceLoop():
-    # We create the board object and set it
-    b = Board()
-    b.resetBoard()
+    b = Board() # We create the Board object
+    b.resetBoard() # We set it
 
     if b.fancyPrint("Would you like to play a game of chess? Answer 'y'/'n': ", inp=True) == 'y':
-        print()
 
         # We create white and black graveyards
         whiteGrave, blackGrave = Graveyard("white"), Graveyard("black") 
 
-        # Following are used to track the state of black and white kings
+        # References stored to King objects to track states
         whiteKing, blackKing = b.state[7][4], b.state[0][4]
-
-        # Default turn is white
-        turn = "white"
         
         # While neither king is captured, primary gameplay loop continues
         while whiteKing.alive and blackKing.alive:
-            b.turnCount += 1
-            if turn == "white":
-                b.fancyPrint("White's turn.\n")
+            # If turn count is NOT even, it is White's turn
+            if b.turnCount % 2 == 1:
+                turn = "white"
                 enemyGrave = blackGrave
+            # Otherwise it is Black's turn
             else:
-                b.fancyPrint("Black's turn.\n")
+                turn = "black"
                 enemyGrave = whiteGrave
             
+            # Printing the board
             print(b)
+
+            # Printing turn
+            b.fancyPrint(turn.capitalize() + "'s turn.")
 
             # Obtaining desired piece to move
             chosenMoves = b.getMove([whiteGrave, blackGrave])
@@ -44,39 +44,37 @@ def interfaceLoop():
                 if allyType.__name__ == "Queen":
                     Rook.moves(allyObject, b, turn, rowChoice, colChoice, possibleMoves)
                     Bishop.moves(allyObject, b, turn, rowChoice, colChoice, possibleMoves)
-                # Otherwise, grab the piece's specific moves by evaluating class name to grab its respective method
+                # Otherwise, grab the piece's specific moves by evaluating class name to grab respective method
                 else:
                     eval(allyType.__name__).moves(allyObject, b, turn, rowChoice, colChoice, possibleMoves)
-                
-                # Print selected piece name
-                b.fancyPrint(allyType.__name__ + " identified.\n")
-
-                # If there are possible moves for given piece proceeds; elsewise, restarts loop
-                if not possibleMoves:
-                    b.fancyPrint("Piece has no valid moves. Choose a different piece.\n")
-                    continue
-                
-                # Calls board method to create graph of possiblities and then prints it
-                print(b.possibilitiesGraph(possibleMoves))
-
-                # Calls board method to confirm choice to move piece
-                # Compares target to possible moves and uses rowChoice and colChoice to set origin to be empty
-                if not b.commitMove(possibleMoves, rowChoice, colChoice, enemyGrave):
-                    b.fancyPrint("Please choose a different piece.\n") # If player rejects choice
-                    continue
             
+                # If there are possible moves for given piece proceeds
+                if possibleMoves:
+                    # Calls board method to create graph of possiblities and then prints it
+                    print(b.possibilitiesGraph(possibleMoves))
+
+                    # Print chosen piece name
+                    b.fancyPrint(allyType.__name__ + " identified.")
+
+                    # Calls board method to confirm choice to move piece
+                    if b.commitMove(possibleMoves, rowChoice, colChoice, enemyGrave):
+                        # If move confirmed, turn increments
+                        b.turnCount += 1
+                    # Otherwise restarts selection loop
+                    else:
+                        b.fancyPrint("Please choose a different piece.\n") # If player rejects choice
+                        continue
+                # If there are no possible moves for a given piece, asks user to select different piece
+                else:
+                    b.fancyPrint(allyType.__name__ + " has no valid moves. Please choose a different piece.\n")
+                    continue
+                
             # If player chooses invalid tile, choice loop restarts
             else:
                 b.fancyPrint("Invalid choice. Please choose again.\n")
                 continue
-
-            # Turn alternator; comes at the very end after a successful move by the previous player
-            if turn == "white":
-                turn = "black"
-            else:
-                turn = "white"
         
-        # Win statements
+        # Win conditions and statements
         if not whiteKing.alive:
             b.fancyPrint("Black wins on turn " + str(b.turnCount) + ".")
         if not blackKing.alive:

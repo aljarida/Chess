@@ -7,5 +7,5 @@ class Graveyard:
         self.numLost = 0
     
     def __repr__(self):
-        repr = self.color + ": " + str(self.grave)
+        repr = self.color.capitalize() + ": " + str(self.grave)
         return repr
