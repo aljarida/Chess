@@ -9,31 +9,32 @@ def interfaceLoop():
     b.resetBoard() # Sets the Board object
 
     if b.fancyPrint("Would you like to play a game of chess? Answer 'y'/'n': ", inp=True) == 'y':
-
-        # Creates White and Black graveyards
+        # Creates White's and Black's graveyards
         whiteGrave, blackGrave = Graveyard("white"), Graveyard("black") 
-        # References stored to King objects to track states
+        # References stored to King objects to track their states (in play or removed)
         whiteKing, blackKing = b.state[7][4], b.state[0][4]
-        # Creates timers to track duration of play
+
+        # Creates timers to track durations of play
+        # turnTimes[0] is Black's time; turnTimes[1] is White's time
         turnTimes = [0, 0]
         currentTime = time.time()
         
         # While neither king is captured, primary gameplay loop continues
         while True:
-            # If turn count is NOT even, it is White's turn
+            # If turn count is NOT even, is White's turn
             if b.turnCount % 2 == 1:
                 turn = "white"
                 enemyGrave, enemyKing = blackGrave, blackKing
             
-            # Otherwise it is Black's turn
+            # If turn count IS even, is Black's turn
             else:
                 turn = "black"
                 enemyGrave, enemyKing = whiteGrave, whiteKing
             
-            # Printing the board
+            # Prints Board object
             print(b)
 
-            # Printing turn
+            # Prints turn
             b.fancyPrint(turn.capitalize() + "'s turn.")
 
             # Obtaining desired piece to move
@@ -81,19 +82,19 @@ def interfaceLoop():
                                 b.fancyPrint(turn + " accumulated " + str(round(turnTimes[1 - i]/60, 3)) + " minutes of turn time. ")
                             break
 
-                    # Otherwise restarts selection loop
+                    # If players disconfirms move, loop restarts and asks player to choose another piece
                     else:
-                        b.fancyPrint("Please choose a different piece.\n") # If player rejects choice
+                        b.fancyPrint("Please choose a different piece.\n")
                         continue
 
-                # If there are no possible moves for a given piece, asks user to select different piece
+                # If piece has no possible moves, loop restarts and asks player to choose another piece
                 else:
                     b.fancyPrint(allyType.__name__ + " has no valid moves. Please choose a different piece.\n")
                     continue
                 
-            # If player chooses invalid tile, choice loop restarts
+            # If player chooses invalid tile, loop restarts and asks player to choose another piece
             else:
-                b.fancyPrint("Invalid choice. Please choose again.\n")
+                b.fancyPrint("Invalid choice. Please choose a different tile.\n")
                 continue
 
 interfaceLoop()
