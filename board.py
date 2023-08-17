@@ -101,16 +101,21 @@ class Board:
         rowChoice, colChoice = -1, -1
         while True:
             # Character-translation dictionary
-            letterToNum = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7,
-                           'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7}
+            letterToNum = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7}
+            # Allowable numerical entries
             validNums = ('1', '2', '3', '4', '5', '6', '7', '8')
+            
             # Requests input from user and remove white space
             if graves:
                 moveInput = self.fancyPrint("Enter a valid letter-number combination (or '0' to view graveyards): ", inp=True).replace(" ", "")
             else:
                 moveInput = self.fancyPrint("Enter a valid letter-number combination: ", inp=True).replace(" ", "")
             # Removes redundant repeated entries and separates characters into list
-            moveInput = list(dict(Counter(moveInput)).keys())
+            charSet = set()
+            for char in moveInput.upper():
+                charSet.add(char)
+            moveInput = list(charSet)
+
             # Checks for valid length and parses input
             if len(moveInput) == 2:
                 # Performs coordinate translation duties
