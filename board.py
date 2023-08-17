@@ -1,4 +1,5 @@
 from pieces import *
+import time
 
 class Board:
     def __init__(self):
@@ -10,15 +11,25 @@ class Board:
     # Creating string representation of grid with row and column numerical labels
     def __repr__(self):
         repr = ""
-        col = 0
+        rowNum = 8
         for row in self.state:
-            repr += str(col) + " |"
-            col += 1
+            repr += str(rowNum) + " |"
+            rowNum -= 1
             for tile in row:
                 repr += " " + str(tile) + " |" # Casts the tile (the pieces' objects or placeholder "___") into a string
             repr += "\n"
-        repr += "     0     1     2     3     4     5     6     7\n"
+        repr += "     A     B     C     D     E     F     G     H\n"
         return repr
+    
+    # Method for printing text and inputs in a visually interesting manner
+    def fancyPrint(self, str, latency=0.01, inp=False):
+        for c in str:
+            print(c,end="",flush=True)
+            time.sleep(latency)
+        if inp:
+            return input()
+        else:
+            print()
 
     # Creates board to standard chess specifications
     def resetBoard(self):
@@ -79,26 +90,40 @@ class Board:
                 copyBoard.state[move[0]][move[1]] = currentRep[0] + "!" + currentRep[2]
         
         return copyBoard
+    
+    def getMove(self, graves=None):
+        rowChoice, colChoice = -1, -1
+        while True:
+            letterToNum = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7,
+                           'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7}
+            validNums = ("1", "2", "3", "4", "5", "6", "7", "8")
+            moveInput = self.fancyPrint("Enter a valid letter-number combination (or '0' to view graveyards): ", inp=True).replace(" ", "")
+            if len(moveInput) == 2:
+                for char in moveInput:
+                    if char in letterToNum:
+                        colChoice = letterToNum[char]
+                    elif char in validNums:
+                        rowChoice = 8 - int(char)
+            if self.inBounds(rowChoice, colChoice):
+                return [rowChoice, colChoice]
+            elif graves:
+                print(graves[0], graves[1])
+            self.fancyPrint("Please choose a valid tile.")
 
     # Asks player if they would like to proceed
     # If yes, player chooses a tile to move to
-    def getMove(self, possibleMoves, rowChoice, colChoice):
+    def commitMove(self, possibleMoves, rowChoice, colChoice, enemyGrave):
         if input("Move this piece? Answer 'y'/'n'.\n") == 'y':
             while True:
-                moveCoords = []
-                moveRow = int(input("Choose a target tile first by row: "))
-                moveCol = int(input("Choose a target tile second by column: "))
-                print()
-                moveCoords.append(moveRow)
-                moveCoords.append(moveCol)
+                moveCoords = self.getMove()
                 if moveCoords in possibleMoves:
-                    self.movePiece([rowChoice, colChoice], moveCoords)
+                    self.movePiece([rowChoice, colChoice], moveCoords, enemyGrave)
                     return True
-                print("Please choose a valid tile.")
+                self.fancyPrint("Please choose a valid tile.")
         return False
     
     # Moves a piece to a target by taking in coordinates for both
-    def movePiece(self, origin, target):
+    def movePiece(self, origin, target, enemyGrave):
         originPiece = self.state[origin[0]][origin[1]] # Acquiring object data at origin (row, col)
         targetPiece = self.state[target[0]][target[1]] # Acquiring data at target (row, col)
         
@@ -120,17 +145,20 @@ class Board:
         
             # If a pawn crosses into the final row, promotion is required
             if (target[0] == 0) or (target[0] == 7):
-                print("Choose a promotion from the following options.")
+                self.fancyPrint("Choose a promotion from the following options.")
                 ranks = ["Queen","Rook","Bishop","Chevalier"]
                 for i, rank in enumerate(ranks):
                     print(str(i) + ". " + rank)
                 print()
                 rankChoice = -1
                 while rankChoice not in [0,1,2,3]:
-                    rankChoice = int(input("Enter an associated number to proceed: "))
+                    rankChoice = int(self.fancyPrint("Enter an associated number to proceed: ", inp=True))
                 originPiece = eval(ranks[rankChoice])(originPiece.color, [origin[0]][origin[1]])
-                print("\nYour Pawn has been promoted to a" + ranks[rankChoice])
+                self.fancyPrint("\nYour Pawn has been promoted to a" + ranks[rankChoice])
         
+        # Adding string representation of removed piece to grave
+        if targetPiece != "___":
+            enemyGrave.grave.append(str(targetPiece))
         # Replacing target's destination with piece object
         self.state[target[0]][target[1]] = originPiece
         # Replacing piece's former destination with placeholder string

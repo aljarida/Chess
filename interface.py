@@ -1,14 +1,20 @@
 from board import *
 from pieces import *
+from graveyard import *
 
 def interfaceLoop():
-    if input("Would you like to play a game of chess? Answer 'y'/'n'.\n"):
-        b = Board()
-        b.resetBoard()
-        
+    # We create the board object and set it
+    b = Board()
+    b.resetBoard()
+
+    if b.fancyPrint("Would you like to play a game of chess? Answer 'y'/'n': ", inp=True) == 'y':
+        print()
+
+        # We create white and black graveyards
+        whiteGrave, blackGrave = Graveyard("white"), Graveyard("black") 
+
         # Following are used to track the state of black and white kings
-        whiteKing = b.state[7][4]
-        blackKing = b.state[0][4]
+        whiteKing, blackKing = b.state[7][4], b.state[0][4]
 
         # Default turn is white
         turn = "white"
@@ -17,62 +23,37 @@ def interfaceLoop():
         while whiteKing.alive and blackKing.alive:
             b.turnCount += 1
             if turn == "white":
-                print("White's turn.\n")
+                b.fancyPrint("White's turn.\n")
+                enemyGrave = blackGrave
             else:
-                print("Black's turn.\n")
+                b.fancyPrint("Black's turn.\n")
+                enemyGrave = whiteGrave
             
             print(b)
 
             # Obtaining desired piece to move
-            rowChoice = -1
-            colChoice = -1
-            while True:
-                rowChoice = int(input("Choose a piece first by row: "))
-                colChoice = int(input("Choose a piece second by column: "))
-                print()
-                if b.inBounds(rowChoice, colChoice):
-                    break
-                print("Please choose a valid tile.")
+            chosenMoves = b.getMove([whiteGrave, blackGrave])
+            rowChoice, colChoice = chosenMoves[0], chosenMoves[1]
 
             possibleMoves = []
-
             # If the chosen tile seats an allied piece
             if b.isAlly(turn, rowChoice, colChoice):
                 allyObject = b.state[rowChoice][colChoice]
-
-                if type(allyObject) == Rook or type(allyObject) == Queen:
-                # Note that you must add castling-capability
-                    print(type(allyObject), " identified.\n")
-
-                    # We add valid rook moves to possibleMoves
+                allyType = type(allyObject)
+                # If piece is Queen, add Rook's and Bishop's moves both
+                if allyType.__name__ == "Queen":
                     Rook.moves(allyObject, b, turn, rowChoice, colChoice, possibleMoves)
-                
-                if type(allyObject) == Bishop or type(allyObject) == Queen:
-                    print(type(allyObject), " identified.\n")
-
-                    # We add valid bishop moves to possibleMoves
                     Bishop.moves(allyObject, b, turn, rowChoice, colChoice, possibleMoves)
+                # Otherwise, grab the piece's specific moves by evaluating class name to grab its respective method
+                else:
+                    eval(allyType.__name__).moves(allyObject, b, turn, rowChoice, colChoice, possibleMoves)
                 
-                elif type(allyObject) == Chevalier:
-                    print(type(allyObject), " identified.\n")
-
-                    Chevalier.moves(allyObject, b, turn, rowChoice, colChoice, possibleMoves)
-
-                elif type(allyObject) == Pawn:
-                    print(type(allyObject), " identified.\n")
-                    
-                    # We add valid pawn moves to possibleMoves
-                    Pawn.moves(allyObject, b, turn, rowChoice, colChoice, possibleMoves)
-
-                elif type(allyObject) == King:
-                    print(type(allyObject), " identified.\n")
-
-                    # We add valid king moves to possibleMoves
-                    King.moves(allyObject, b, turn, rowChoice, colChoice, possibleMoves)
+                # Print selected piece name
+                b.fancyPrint(allyType.__name__ + " identified.\n")
 
                 # If there are possible moves for given piece proceeds; elsewise, restarts loop
                 if not possibleMoves:
-                    print("Piece has no valid moves. Choose a different piece.\n")
+                    b.fancyPrint("Piece has no valid moves. Choose a different piece.\n")
                     continue
                 
                 # Calls board method to create graph of possiblities and then prints it
@@ -80,15 +61,13 @@ def interfaceLoop():
 
                 # Calls board method to confirm choice to move piece
                 # Compares target to possible moves and uses rowChoice and colChoice to set origin to be empty
-                if b.getMove(possibleMoves, rowChoice, colChoice):
-                    print(b)
-                else: # If player rejects choice
-                    print("Please choose a different piece.\n")
+                if not b.commitMove(possibleMoves, rowChoice, colChoice, enemyGrave):
+                    b.fancyPrint("Please choose a different piece.\n") # If player rejects choice
                     continue
             
             # If player chooses invalid tile, choice loop restarts
             else:
-                print("Invalid choice. Please choose again.\n")
+                b.fancyPrint("Invalid choice. Please choose again.\n")
                 continue
 
             # Turn alternator; comes at the very end after a successful move by the previous player
@@ -99,8 +78,8 @@ def interfaceLoop():
         
         # Win statements
         if not whiteKing.alive:
-            print("Black wins on turn " + str(b.turnCount) + ".")
+            b.fancyPrint("Black wins on turn " + str(b.turnCount) + ".")
         if not blackKing.alive:
-            print("White wins on turn " + str(b.turnCount) + ".")
+            b.fancyPrint("White wins on turn " + str(b.turnCount) + ".")
 
 interfaceLoop()
