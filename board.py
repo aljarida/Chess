@@ -128,7 +128,7 @@ class Board:
                 if self.inBounds(rowChoice, colChoice):
                     return [rowChoice, colChoice]
             # If input is '0' and graves=True, prints White's and Black's graves
-            elif graves and moveInput == '0':
+            elif graves and moveInput[0] == '0':
                 print(graves[0], graves[1])
             # While there is no valid input, loop continues
             self.fancyPrint("Please choose a valid tile.")
