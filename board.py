@@ -1,5 +1,7 @@
-from pieces import *
 import time
+from collections import Counter
+
+from pieces import *
 
 class Board:
     def __init__(self):
@@ -107,7 +109,9 @@ class Board:
                 moveInput = self.fancyPrint("Enter a valid letter-number combination (or '0' to view graveyards): ", inp=True).replace(" ", "")
             else:
                 moveInput = self.fancyPrint("Enter a valid letter-number combination: ", inp=True).replace(" ", "")
-            # Checks for valid length and parse
+            # Removes redundant repeated entries and separates characters into list
+            moveInput = list(dict(Counter(moveInput)).keys())
+            # Checks for valid length and parses input
             if len(moveInput) == 2:
                 # Performs coordinate translation duties
                 for char in moveInput:
@@ -168,7 +172,7 @@ class Board:
                 while rankChoice not in [0,1,2,3]:
                     rankChoice = int(self.fancyPrint("Enter an associated number to proceed: ", inp=True))
                 originPiece = eval(ranks[rankChoice])(originPiece.color, [origin[0]][origin[1]])
-                self.fancyPrint("\nYour Pawn has been promoted to a" + ranks[rankChoice])
+                self.fancyPrint("\nYour Pawn has been promoted to a " + ranks[rankChoice])
         
         # Adding string representation of removed piece to grave
         if targetPiece != "___":
