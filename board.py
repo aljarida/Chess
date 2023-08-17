@@ -3,12 +3,12 @@ import time
 
 class Board:
     def __init__(self):
-        # Initializing empty 8x8 board composed of __'s
+        # Initializing empty 8x8 board composed of "__" strings
         self.state = [["___"]*8 for _ in range(8)]
         # Initializing turn counter
         self.turnCount = 1
     
-    # Creating string representation of grid with row and column numerical labels
+    # Creating string representation of grid with row and column labels
     def __repr__(self):
         repr = "\n"
         rowNum = 8
@@ -80,37 +80,48 @@ class Board:
                 copyBoard.state[row][col] = str(self.state[row][col])
         
         # Marks possibilities with "_?_" or "_!_"
-        # "!" indicates option for removal of enemy piece
         for move in moves:
             # moves[0] == row & move[1] == col
             currentRep = copyBoard.state[move[0]][move[1]]
-            if currentRep == "___":
+            if currentRep == "___": # If empty tile
                 copyBoard.state[move[0]][move[1]] = "_?_"
-            else:
+            else: # If enemy piece
                 copyBoard.state[move[0]][move[1]] = currentRep[0] + "!" + currentRep[2]
         
         return copyBoard
     
-    def getMove(self, graves=None):
+    """ Method to read input from user to dictate move. Accepts inputs between A-H and a-h (equally) for columns
+        and inputs between 1-8 for rows, and translates the input into grid/row indices for the engine to interpret.
+        Input can be any 1 character and 1 integer within the valid ranges with any number of white space.
+        Accepts the optional argument graves which when True enables the user to print the current graveyards.
+    """
+    def getMove(self, graves=False):
         rowChoice, colChoice = -1, -1
         while True:
+            # Character-translation dictionary
             letterToNum = {'a': 0, 'b': 1, 'c': 2, 'd': 3, 'e': 4, 'f': 5, 'g': 6, 'h': 7,
                            'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7}
-            validNums = ("1", "2", "3", "4", "5", "6", "7", "8")
+            validNums = ('1', '2', '3', '4', '5', '6', '7', '8')
+            # Requests input from user and remove white space
             if graves:
                 moveInput = self.fancyPrint("Enter a valid letter-number combination (or '0' to view graveyards): ", inp=True).replace(" ", "")
             else:
                 moveInput = self.fancyPrint("Enter a valid letter-number combination: ", inp=True).replace(" ", "")
+            # Checks for valid length and parse
             if len(moveInput) == 2:
+                # Performs coordinate translation duties
                 for char in moveInput:
                     if char in letterToNum:
                         colChoice = letterToNum[char]
                     elif char in validNums:
                         rowChoice = 8 - int(char)
-            if self.inBounds(rowChoice, colChoice):
-                return [rowChoice, colChoice]
+                # Checks that translated coordinates are valid
+                if self.inBounds(rowChoice, colChoice):
+                    return [rowChoice, colChoice]
+            # If input is '0' and graves=True, prints White's and Black's graves
             elif graves and moveInput == '0':
                 print(graves[0], graves[1])
+            # While there is no valid input, loop continues
             self.fancyPrint("Please choose a valid tile.")
 
     # Asks player if they would like to proceed

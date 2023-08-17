@@ -1,29 +1,34 @@
+import time
+
 from board import *
 from pieces import *
 from graveyard import *
 
 def interfaceLoop():
-    b = Board() # We create the Board object
-    b.resetBoard() # We set it
+    b = Board() # Creates the Board object
+    b.resetBoard() # Sets the Board object
 
     if b.fancyPrint("Would you like to play a game of chess? Answer 'y'/'n': ", inp=True) == 'y':
 
-        # We create white and black graveyards
+        # Creates White and Black graveyards
         whiteGrave, blackGrave = Graveyard("white"), Graveyard("black") 
-
         # References stored to King objects to track states
         whiteKing, blackKing = b.state[7][4], b.state[0][4]
+        # Creates timers to track duration of play
+        turnTimes = [0, 0]
+        currentTime = time.time()
         
         # While neither king is captured, primary gameplay loop continues
-        while whiteKing.alive and blackKing.alive:
+        while True:
             # If turn count is NOT even, it is White's turn
             if b.turnCount % 2 == 1:
                 turn = "white"
-                enemyGrave = blackGrave
+                enemyGrave, enemyKing = blackGrave, blackKing
+            
             # Otherwise it is Black's turn
             else:
                 turn = "black"
-                enemyGrave = whiteGrave
+                enemyGrave, enemyKing = whiteGrave, whiteKing
             
             # Printing the board
             print(b)
@@ -44,6 +49,7 @@ def interfaceLoop():
                 if allyType.__name__ == "Queen":
                     Rook.moves(allyObject, b, turn, rowChoice, colChoice, possibleMoves)
                     Bishop.moves(allyObject, b, turn, rowChoice, colChoice, possibleMoves)
+
                 # Otherwise, grab the piece's specific moves by evaluating class name to grab respective method
                 else:
                     eval(allyType.__name__).moves(allyObject, b, turn, rowChoice, colChoice, possibleMoves)
@@ -53,17 +59,33 @@ def interfaceLoop():
                     # Calls board method to create graph of possiblities and then prints it
                     print(b.possibilitiesGraph(possibleMoves))
 
-                    # Print chosen piece name
+                    # Prints chosen piece name
                     b.fancyPrint(allyType.__name__ + " identified.")
 
                     # Calls board method to confirm choice to move piece
                     if b.commitMove(possibleMoves, rowChoice, colChoice, enemyGrave):
+                        # Updates turn time for respective turn color
+                        turnTimes[b.turnCount % 2] += time.time() - currentTime
+                        # Updates time for next-turn time tracking
+                        currentTime = time.time()
+
                         # If move confirmed, turn increments
                         b.turnCount += 1
+                        # Win condition and statement, breaks out of entire game loop
+                        if not enemyKing.alive:
+                            print(b)
+                            b.fancyPrint(turn.capitalize() + " wins on turn " + str(b.turnCount) + ".")
+                            # Prints timer statistics
+                            b.fancyPrint("Game lasted " + str(round(int(sum(turnTimes)/60), 3)) + " minutes.")
+                            for i, turn in enumerate(["White","Black"]):
+                                b.fancyPrint(turn + " accumulated " + str(round(turnTimes[1 - i]/60, 3)) + " minutes of turn time. ")
+                            break
+
                     # Otherwise restarts selection loop
                     else:
                         b.fancyPrint("Please choose a different piece.\n") # If player rejects choice
                         continue
+
                 # If there are no possible moves for a given piece, asks user to select different piece
                 else:
                     b.fancyPrint(allyType.__name__ + " has no valid moves. Please choose a different piece.\n")
@@ -73,11 +95,5 @@ def interfaceLoop():
             else:
                 b.fancyPrint("Invalid choice. Please choose again.\n")
                 continue
-        
-        # Win conditions and statements
-        if not whiteKing.alive:
-            b.fancyPrint("Black wins on turn " + str(b.turnCount) + ".")
-        if not blackKing.alive:
-            b.fancyPrint("White wins on turn " + str(b.turnCount) + ".")
 
 interfaceLoop()

@@ -10,9 +10,9 @@ class Pawn:
     def moves(allyObject, b, turn, rowChoice, colChoice, possibleMoves):
         # Direction pawn is moving
         if turn == "white":
-                heading = -1 # Up if white
+                heading = -1 # Up if White
         else:
-            heading = 1 # Down if black
+            heading = 1 # Down if Black
 
         # Scans three columns ahead of pawn in correct direction
         for col in range(colChoice-1, colChoice+2):
@@ -37,10 +37,6 @@ class Pawn:
 
     def __repr__(self):
         return self.color[0] + "_P"
-    
-class Empty:
-    def ___repr___(self):
-        return "___"
 
 class Rook:
     def __init__(self, color, coords):
