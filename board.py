@@ -138,7 +138,10 @@ class Board:
     def commitMove(self, possibleMoves, rowChoice, colChoice, enemyGrave):
         if input("Move this piece? Answer 'y'/'n': ") == 'y':
             while True:
-                moveCoords = self.getMove()
+                if len(possibleMoves) == 1:
+                    moveCoords = possibleMoves[0]
+                else:
+                    moveCoords = self.getMove()
                 if moveCoords in possibleMoves:
                     self.movePiece([rowChoice, colChoice], moveCoords, enemyGrave)
                     return True
