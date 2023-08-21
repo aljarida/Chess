@@ -42,6 +42,7 @@ class Rook:
     def __init__(self, color, coords):
         self.color = color
         self.coords = coords
+        self.firstMove = 1
 
     def moves(allyObject, b, turn, rowChoice, colChoice, possibleMoves):
         for index in [0, 1]: # First modifies row, then col
@@ -110,6 +111,7 @@ class King:
         self.color = color
         self.coords = coords
         self.alive = True
+        self.firstMove = 1
 
     def moves(allyObject, b, turn, rowChoice, colChoice, possibleMoves):
         adjacentMods = [[1, 1], [1, 0], [1, -1], # Tiles ahead
@@ -121,6 +123,22 @@ class King:
             kingCol = colChoice + mod[1]
             if b.isString(kingRow, kingCol) or b.isEnemy(turn, kingRow, kingCol):
                 possibleMoves.append([kingRow, kingCol])
+        
+        # Search for castling ability
+        if allyObject.firstMove:
+            # Heading provides right and left scanning in 1, -1, respectively
+            for heading in [1,-1]:
+                col = colChoice + heading
+                # While in bounds, iterate through row
+                while b.inBounds(rowChoice, col):
+                    tileOver = b.state[rowChoice][col]
+                    # If the encountered tile is a Rook, has not yet moved, and is an ally, we append the move
+                    if (type(tileOver) == Rook) and tileOver.firstMove and (tileOver.color == allyObject.color):
+                        possibleMoves.append([rowChoice, colChoice + 2*heading])
+                    # If a non-empty tile is encountered before a valid rook, there is no option for castling in heading's direction
+                    elif tileOver != "___":
+                        break
+                    col += heading
 
     def __repr__(self):
         return self.color[0] + "_K"

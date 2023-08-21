@@ -152,43 +152,68 @@ class Board:
     def movePiece(self, origin, target, enemyGrave):
         originPiece = self.state[origin[0]][origin[1]] # Acquiring object data at origin (row, col)
         targetPiece = self.state[target[0]][target[1]] # Acquiring data at target (row, col)
-        
-        # The target King is removed, thus we set it as not alive
-        if type(targetPiece) == King:
-            targetPiece.alive = 0
-        
-        # The origin Pawn moves, thus we mark that it has already made its first move
-        if type(originPiece) == Pawn:
-            originPiece.firstMove = 0
 
-            # We check for a two-tile advance to establish en passant vulnerability and mark the turn it was made
-            if abs(target[0] - origin[0]) == 2:
-                originPiece.enPassantVulnerable = self.turnCount
+        # If the ally piece IS a castling King
+        if (type(originPiece) == King) and (abs(target[1] - origin[1]) > 1):
+                heading = (target[1] - origin[1])
+                # If the heading is positive, subtracts 1
+                if heading > 0: heading -= 1
+
+                rookPiece = self.state[target[0]][target[1] + heading]
+
+                # Places empty tiles in both the King's and Rook's original positions
+                self.state[origin[0]][origin[1]] = "___"
+                self.state[target[0]][target[1] + heading] = "___"
+
+                # If the heading is negative, divides it by 2
+                if heading < 0: heading //= 2
+
+                # Moves the King and Rook to their final destinations
+                self.state[target[0]][target[1]] = originPiece
+                self.state[origin[0]][origin[1] + heading] = rookPiece
+
+                # Removes firstMove flags
+                rookPiece.firstMove = 0
+                originPiece.firstMove = 0
+
+        # If the ally piece is NOT a castling King
+        else:
+            # The target King is removed, thus we set it as not alive
+            if type(targetPiece) == King:
+                targetPiece.alive = 0
             
-            # If a pawn can diagonally move to an empty tile, we know it is en passant
-            if targetPiece == "___":
-                self.state[origin[0]][target[1]] = "___" # We remove the enemy pawn
-        
-            # If a pawn crosses into the final row, promotion is required
-            if (target[0] == 0) or (target[0] == 7):
-                self.fancyPrint("Choose a promotion from the following options.")
-                ranks = ["Queen","Rook","Bishop","Chevalier"]
-                for i, rank in enumerate(ranks):
-                    print(str(i) + ". " + rank)
-                print()
-                rankChoice = -1
-                while rankChoice not in [0,1,2,3]:
-                    rankChoice = int(self.fancyPrint("Enter an associated number to proceed: ", inp=True))
-                originPiece = eval(ranks[rankChoice])(originPiece.color, [origin[0]][origin[1]])
-                self.fancyPrint("\nYour Pawn has been promoted to a " + ranks[rankChoice])
-        
-        # Adding string representation of removed piece to grave
-        if targetPiece != "___":
-            enemyGrave.grave.append(str(targetPiece))
-        # Replacing target's destination with piece object
-        self.state[target[0]][target[1]] = originPiece
-        # Replacing piece's former destination with placeholder string
-        self.state[origin[0]][origin[1]] = "___"
+            # The origin Pawn moves, thus we mark that it has already made its first move
+            if type(originPiece) == Pawn:
+                originPiece.firstMove = 0
+
+                # We check for a two-tile advance to establish en passant vulnerability and mark the turn it was made
+                if abs(target[0] - origin[0]) == 2:
+                    originPiece.enPassantVulnerable = self.turnCount
+                
+                # If a pawn can diagonally move to an empty tile, we know it is en passant
+                if targetPiece == "___":
+                    self.state[origin[0]][target[1]] = "___" # We remove the enemy pawn
+            
+                # If a pawn crosses into the final row, promotion is required
+                if (target[0] == 0) or (target[0] == 7):
+                    self.fancyPrint("Choose a promotion from the following options.")
+                    ranks = ["Queen","Rook","Bishop","Chevalier"]
+                    for i, rank in enumerate(ranks):
+                        print(str(i) + ". " + rank)
+                    print()
+                    rankChoice = -1
+                    while rankChoice not in [0,1,2,3]:
+                        rankChoice = int(self.fancyPrint("Enter an associated number to proceed: ", inp=True))
+                    originPiece = eval(ranks[rankChoice])(originPiece.color, [origin[0]][origin[1]])
+                    self.fancyPrint("\nYour Pawn has been promoted to a " + ranks[rankChoice])
+            
+            # Adding string representation of removed piece to grave
+            if targetPiece != "___":
+                enemyGrave.grave.append(str(targetPiece))
+            # Replacing target's destination with piece object
+            self.state[target[0]][target[1]] = originPiece
+            # Replacing piece's former destination with placeholder string
+            self.state[origin[0]][origin[1]] = "___"
     
     # Checks that the chosen coordinates are in bounds
     def inBounds(self, row, col):

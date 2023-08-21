@@ -38,14 +38,15 @@ def interfaceLoop():
             b.fancyPrint(turn.capitalize() + "'s turn.")
 
             # Obtaining desired piece to move
-            chosenMoves = b.getMove([whiteGrave, blackGrave])
+            chosenMoves = b.getMove(graves=[whiteGrave, blackGrave])
             rowChoice, colChoice = chosenMoves[0], chosenMoves[1]
 
-            possibleMoves = []
             # If the chosen tile seats an allied piece
             if b.isAlly(turn, rowChoice, colChoice):
                 allyObject = b.state[rowChoice][colChoice]
                 allyType = type(allyObject)
+                possibleMoves = []
+
                 # If piece is Queen, add Rook's and Bishop's moves both
                 if allyType.__name__ == "Queen":
                     Rook.moves(allyObject, b, turn, rowChoice, colChoice, possibleMoves)
@@ -55,7 +56,7 @@ def interfaceLoop():
                 else:
                     eval(allyType.__name__).moves(allyObject, b, turn, rowChoice, colChoice, possibleMoves)
             
-                # If there are possible moves for given piece proceeds
+                # If there are possible moves for given piece, proceeds
                 if possibleMoves:
                     # Calls board method to create graph of possiblities and then prints it
                     print(b.possibilitiesGraph(possibleMoves))
@@ -67,7 +68,7 @@ def interfaceLoop():
                     if b.commitMove(possibleMoves, rowChoice, colChoice, enemyGrave):
                         # Updates turn time for respective turn color
                         turnTimes[b.turnCount % 2] += time.time() - currentTime
-                        # Updates time for next-turn time tracking
+                        # Updates time for next-turn time-tracking
                         currentTime = time.time()
 
                         # If move confirmed, turn increments
